@@ -1,11 +1,19 @@
 const { trace } = require('@opentelemetry/api');
 const config = require('../config');
+const { getOrGenerateTraceId } = require('../utils/trace');
 
 function tracingMiddleware(req, res, next) {
   if (!config.tracing.enabled) return next();
 
+  // 获取或生成Trace ID并设置到请求头
+  const traceId = getOrGenerateTraceId(req.headers);
+  req.headers['x-trace-id'] = traceId;
+
   const tracer = trace.getTracer(config.tracing.serviceName);
   const span = tracer.startSpan(`HTTP ${req.method} ${req.path}`);
+  
+  // 设置Trace ID到Span
+  span.setAttribute('trace.id', traceId);
   
   // 设置Span属性
   span.setAttributes({
