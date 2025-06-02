@@ -9,26 +9,23 @@ const conversationSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
-    trim: true,
+    text: true // 添加全文索引
   },
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: Date.now
   },
   updatedAt: {
     type: Date,
-    default: Date.now,
-  },
+    default: Date.now
+  }
 });
 
-// 更新updatedAt字段的钩子
+// 添加全文索引
+conversationSchema.index({ title: 'text' });
+
 conversationSchema.pre('save', function(next) {
-  this.updatedAt = new Date();
-  next();
-});
-
-conversationSchema.pre('updateOne', function(next) {
-  this.set({ updatedAt: new Date() });
+  this.updatedAt = Date.now();
   next();
 });
 
