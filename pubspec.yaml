@@ -1,0 +1,16 @@
+name: chat2ai
+description: A Flutter application for Chat2AI
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^0.13.5
+  provider: ^6.0.5
+
+flutter:
+  uses-material-design: true

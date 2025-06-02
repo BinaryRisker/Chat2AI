@@ -185,3 +185,59 @@ src/
 2. 性能优化
 3. 用户体验改进
 4. 文档完善
+
+## CI/CD流程
+
+项目使用GitHub Actions实现自动化CI/CD流程，包含以下阶段：
+
+1. **测试阶段**
+   - 自动运行Node.js后端测试
+   - 自动运行Flutter前端测试
+   - 代码覆盖率检查
+
+2. **构建阶段**
+   - 构建Docker镜像
+   - 推送镜像到Docker Hub
+
+3. **部署阶段**
+   - 自动部署到测试环境
+   - 手动触发生产环境部署
+
+完整工作流定义见`.github/workflows/ci-cd.yml`
+
+## 本地开发指南
+
+### 环境准备
+1. 安装Node.js 18+和Flutter 3.0+
+2. 安装Docker Desktop（可选）
+3. 配置API密钥（见`.env.example`）
+
+### 启动后端服务
+```bash
+cd server
+npm install
+npm run dev
+```
+
+### 启动前端应用
+```bash
+cd lib
+flutter pub get
+flutter run
+```
+
+### 运行测试
+```bash
+# 后端测试
+cd server
+npm test
+
+# 前端测试
+cd lib
+flutter test
+```
+
+### Docker开发环境
+```bash
+docker-compose -f docker-compose.dev.yml up
+```
