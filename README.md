@@ -35,22 +35,59 @@
 #### 前端架构 (Flutter)
 ```
 lib/
-├── models/        # 数据模型
-├── services/      # API服务
-├── stores/        # 状态管理
-├── utils/         # 工具类
-└── views/         # 页面组件
+├── models/                # 数据模型
+│   ├── chat_model.dart    # 聊天消息模型
+│   ├── user_model.dart   # 用户模型
+│   └── settings_model.dart # 设置模型
+├── services/              # API服务
+│   ├── api_service.dart  # 基础API服务
+│   ├── chat_service.dart # 聊天服务
+│   └── auth_service.dart # 认证服务
+├── stores/                # 状态管理
+│   ├── chat_store.dart   # 聊天状态
+│   ├── user_store.dart   # 用户状态
+│   └── theme_store.dart  # 主题状态
+├── utils/                 # 工具类
+│   ├── constants.dart   # 常量定义
+│   ├── extensions.dart  # 扩展方法
+│   └── logger.dart      # 日志工具
+└── views/                 # 页面组件
+    ├── screens/         # 页面
+    │   ├── chat_screen.dart
+    │   ├── auth_screen.dart
+    │   └── settings_screen.dart
+    └── widgets/         # 组件
+        ├── message_bubble.dart
+        └── model_selector.dart
 ```
 
 #### 后端架构 (Node.js)
 ```
 src/
-├── config/        # 配置文件
-├── controllers/   # 业务逻辑
-├── middleware/    # 中间件
-├── models/        # 数据库模型
-├── routes/        # API路由
-└── services/      # 核心服务
+├── config/                # 配置文件
+│   ├── app.config.ts     # 应用配置
+│   └── db.config.ts     # 数据库配置
+├── controllers/           # 业务逻辑
+│   ├── chat.controller.ts
+│   ├── auth.controller.ts
+│   └── user.controller.ts
+├── middleware/            # 中间件
+│   ├── auth.middleware.ts
+│   └── error.middleware.ts
+├── models/                # 数据库模型
+│   ├── chat.model.ts
+│   ├── user.model.ts
+│   └── index.ts
+├── routes/                # API路由
+│   ├── chat.routes.ts
+│   ├── auth.routes.ts
+│   └── index.ts
+└── services/              # 核心服务
+    ├── ai/               # AI服务
+    │   ├── openai.service.ts
+    │   └── claude.service.ts
+    ├── chat.service.ts   # 聊天服务
+    └── auth.service.ts   # 认证服务
 ```
 
 ## 技术选型
