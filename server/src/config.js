@@ -2,7 +2,7 @@ require('dotenv').config();
 
 module.exports = {
   env: process.env.NODE_ENV || 'development',
-  port: process.env.PORT || 3000,
+  port: process.env.PORT || 3001,
   db: {
     dialect: 'sqlite',
     storage: process.env.DB_STORAGE || './db.sqlite',

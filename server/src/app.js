@@ -8,6 +8,23 @@ const app = express();
 
 // 初始化CLS命名空间用于请求上下文追踪
 const traceNamespace = createNamespace('trace');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+
+// Swagger配置
+const options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Chat2AI API',
+      version: '1.0.0',
+    },
+  },
+  apis: ['./routes/*.js'], // 指定包含API路由注释的文件
+};
+
+const specs = swaggerJsdoc(options);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // 中间件
 app.use(cors());

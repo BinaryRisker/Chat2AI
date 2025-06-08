@@ -14,5 +14,17 @@ router.post('/', authenticate, validateRequest(createConversationSchema), chatCo
 
 // 搜索会话和消息
 router.get('/search', authenticate, chatController.searchConversations);
-
+/**
+ * @swagger
+ * /chat:
+ *   get:
+ *     summary: 获取用户所有会话
+ *     tags: [Chat]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 成功获取会话列表
+ */
+router.get('/', authenticate, chatController.getConversations);
 module.exports = router;
