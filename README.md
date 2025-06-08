@@ -1,4 +1,6 @@
 # Chat2AI
+[![CI/CD Status](https://github.com/BinaryRisker/Chat2AI/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/BinaryRisker/Chat2AI/actions/workflows/ci-cd.yml)
+
 跨平台AI聊天工具，支持多种大模型。目前项目已完成大规模重构，实现了前后端分离的现代化架构，并打通了真实数据链路。
 
 ## 项目概述
