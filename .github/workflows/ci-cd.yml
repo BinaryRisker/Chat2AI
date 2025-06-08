@@ -36,7 +36,7 @@ jobs:
       run: flutter pub get
     
     - name: Run Flutter tests
-      working-directory: ./lib
+      working-directory: ./
       run: flutter test
 
   deploy:

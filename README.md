@@ -47,40 +47,76 @@ lib/
 ├── services/              # API服务
 │   ├── api_service.dart   # 基础API服务
 │   ├── chat_service.dart # 聊天服务
-│   └── auth_service.dart # 认证服务
+│   ├── settings_service.dart
+│   └── user_service.dart
 ├── stores/                # 状态管理 (Riverpod)
 │   ├── chat_store.dart    # 聊天状态
 │   ├── user_store.dart    # 用户状态
 │   └── theme_store.dart   # 主题状态
-├── utils/                 # 工具类
-│   ├── constants.dart   # 常量定义
-│   ├── extensions.dart  # 扩展方法
-│   └── logger.dart      # 日志工具
-└── views/                 # 页面组件
-    ├── pages/         # 页面
-    │   ├── home_page.dart     # 主页 (包含会话列表和聊天窗口)
-    │   ├── login_page.dart
-    │   ├── register_page.dart
-    │   └── settings_page.dart
-    └── widgets/         # 组件
-        ├── conversation_list.dart
-        ├── message_bubble.dart
-        └── chat_input.dart
+├── pages/                 # 页面
+│   ├── chat_page.dart     # 聊天页面
+│   ├── home_page.dart     # 主页
+│   ├── login_page.dart    # 登录页
+│   ├── register_page.dart # 注册页
+│   └── settings_page.dart # 设置页
+├── widgets/               # 组件
+│   ├── chat_input.dart    # 聊天输入框
+│   ├── conversation_list.dart # 会话列表
+│   ├── message_bubble.dart # 消息气泡
+│   ├── new_chat_button.dart # 新建聊天按钮
+│   └── settings_tile.dart # 设置项
+├── app.dart               # 应用入口
+├── config.dart            # 配置
+├── main.dart              # 主文件
+├── routes.dart            # 路由配置
+└── themes.dart            # 主题配置
 ```
 
 #### 后端架构 (Node.js - 当前状态)
 ```
 server/
-└── src/
-    ├── controllers/       # 业务逻辑层 (auth, chat, users)
-    ├── middleware/        # 中间件 (auth, validation)
-    ├── models/            # Sequelize数据模型 (user, conversation, message)
-    ├── routes/            # API路由 (auth, chat, users)
-    ├── validation/        # 请求验证逻辑
-    ├── app.js             # Express应用主文件
-    ├── config.js          # 配置文件
-    ├── db.js              # Sequelize数据库连接逻辑
-    └── package.json       # 项目依赖
+├── src/
+│   ├── controllers/       # 业务逻辑层
+│   │   ├── auth.js       # 认证控制器
+│   │   ├── chat.js       # 聊天控制器
+│   │   └── users.js      # 用户控制器
+│   ├── middleware/       # 中间件
+│   │   ├── auth.js       # 认证中间件
+│   │   ├── tracing.js    # 追踪中间件
+│   │   └── validation.js # 验证中间件
+│   ├── models/           # 数据模型
+│   │   ├── conversation.js # 会话模型
+│   │   ├── message.js    # 消息模型
+│   │   └── user.js       # 用户模型
+│   ├── routes/           # API路由
+│   │   ├── auth.js       # 认证路由
+│   │   ├── chat.js       # 聊天路由
+│   │   └── users.js      # 用户路由
+│   ├── services/        # 服务层
+│   │   ├── ai/          # AI服务
+│   │   ├── chat.service.js # 聊天服务
+│   │   └── search.service.js # 搜索服务
+│   ├── tests/           # 测试
+│   │   ├── __mocks__/   # 模拟数据
+│   │   ├── ai.service.test.js
+│   │   ├── chat.service.test.js
+│   │   └── search.service.test.js
+│   ├── utils/           # 工具类
+│   │   └── trace.js     # 追踪工具
+│   ├── validation/      # 验证逻辑
+│   │   ├── auth.js     # 认证验证
+│   │   ├── chat.js     # 聊天验证
+│   │   └── users.js    # 用户验证
+│   ├── app.js          # Express应用主文件
+│   ├── config.js       # 配置文件
+│   ├── db.js          # 数据库连接
+│   ├── index.js       # 入口文件
+│   └── package.json  # 项目依赖
+└── tests/             # 测试
+    ├── __mocks__/    # 模拟数据
+    ├── ai.service.test.js
+    ├── chat.service.test.js
+    └── search.service.test.js
 ```
 
 ## 技术选型 (当前实现)
