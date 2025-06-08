@@ -1,37 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:chat2ai/stores/chat_store.dart';
-import 'package:chat2ai/stores/user_store.dart';
 import 'package:chat2ai/widgets/conversation_list.dart';
-import 'package:chat2ai/widgets/new_chat_button.dart';
+import 'package:chat2ai/pages/chat_page.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final chatState = ref.watch(chatStoreProvider);
-    final userState = ref.watch(userStoreProvider);
+    final chatStateAsync = ref.watch(chatNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Chat2AI'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.pushNamed(context, '/settings'),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: chatState.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : ConversationList(conversations: chatState.conversations),
-          ),
-          const NewChatButton(),
-        ],
+      body: chatStateAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
+        data: (chatState) {
+          final activeConversationId = chatState.activeConversationId;
+          return Row(
+            children: [
+              SizedBox(
+                width: 300,
+                child: ConversationList(
+                  conversations: chatState.conversations,
+                  onConversationSelected: (id) {
+                    ref.read(chatNotifierProvider.notifier).setActiveConversation(id);
+                  },
+                ),
+              ),
+              const VerticalDivider(width: 1),
+              Expanded(
+                child: activeConversationId != null
+                    ? ChatPage(conversationId: activeConversationId)
+                    : const Center(child: Text('Select a conversation to start')),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

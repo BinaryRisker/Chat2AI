@@ -1,29 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:chat2ai/stores/user_store.dart';
+import 'package:chat2ai/models/user_model.dart';
+import 'package:go_router/go_router.dart';
 
-class LoginPage extends ConsumerStatefulWidget {
+class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});
 
   @override
-  ConsumerState<LoginPage> createState() => _LoginPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsyncValue = ref.watch(userNotifierProvider);
+    final formKey = GlobalKey<FormState>();
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
 
-class _LoginPageState extends ConsumerState<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final userState = ref.watch(userStoreProvider);
+    // Listen for state changes to navigate or show errors
+    ref.listen<AsyncValue<User?>>(userNotifierProvider, (_, state) {
+      if (state is AsyncData && state.value != null) {
+        // Navigate to home on successful login
+        context.go('/');
+      }
+      if (state is AsyncError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login Failed: ${state.error}')),
+        );
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -32,21 +34,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          key: _formKey,
+          key: formKey,
           child: Column(
             children: [
               TextFormField(
-                controller: _emailController,
+                controller: emailController,
                 decoration: const InputDecoration(labelText: 'Email'),
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
+                  if (value == null || !value.contains('@')) {
+                    return 'Please enter a valid email';
                   }
                   return null;
                 },
               ),
               TextFormField(
-                controller: _passwordController,
+                controller: passwordController,
                 decoration: const InputDecoration(labelText: 'Password'),
                 obscureText: true,
                 validator: (value) {
@@ -58,19 +60,26 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: userState.isLoading
+                onPressed: userAsyncValue.isLoading
                     ? null
-                    : () async {
-                        if (_formKey.currentState!.validate()) {
-                          await ref.read(userStoreProvider.notifier).login(
-                                _emailController.text,
-                                _passwordController.text,
+                    : () {
+                        if (formKey.currentState!.validate()) {
+                          ref.read(userNotifierProvider.notifier).login(
+                                emailController.text,
+                                passwordController.text,
                               );
                         }
                       },
-                child: userState.isLoading
-                    ? const CircularProgressIndicator()
+                child: userAsyncValue.isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
                     : const Text('Login'),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () {
+                  context.push('/register'); // Navigate to register page
+                },
+                child: const Text('Don\'t have an account? Register'),
               ),
             ],
           ),

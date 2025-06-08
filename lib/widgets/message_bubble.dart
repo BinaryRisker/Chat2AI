@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:chat2ai/models/chat_model.dart';
+import 'package:chat2ai/stores/chat_store.dart';
 
 class MessageBubble extends StatelessWidget {
-  final ChatMessage message;
+  final Message message;
 
   const MessageBubble({
     super.key,

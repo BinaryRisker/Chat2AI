@@ -1,67 +1,46 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:chat2ai/models/user_model.dart';
+import 'package:chat2ai/services/api_service.dart';
 
-class User {
-  final String id;
-  final String name;
-  final String email;
-  final String? avatarUrl;
+// The state of our notifier is the User object itself, or null if not authenticated.
+// AsyncValue will handle loading and error states for us.
+class UserNotifier extends AsyncNotifier<User?> {
+  
+  late ApiService _apiService;
 
-  User({
-    required this.id,
-    required this.name,
-    required this.email,
-    this.avatarUrl,
-  });
-}
+  @override
+  Future<User?> build() async {
+    _apiService = ref.read(apiServiceProvider);
+    // Here you could auto-login the user from a saved token
+    return null;
+  }
 
-class UserState {
-  final User? currentUser;
-  final bool isAuthenticated;
+  Future<void> login(String email, String password) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final response = await _apiService.login(email, password);
+      final user = User.fromJson(response['user']);
+      // Here you would save the token: response['token']
+      return user.copyWith(token: response['token']);
+    });
+  }
+  
+  Future<void> register(String name, String email, String password) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final response = await _apiService.register(name, email, password);
+      final user = User.fromJson(response['user']);
+      // Here you would save the token: response['token']
+      return user.copyWith(token: response['token']);
+    });
+  }
 
-  const UserState({
-    this.currentUser,
-    required this.isAuthenticated,
-  });
-
-  UserState copyWith({
-    User? currentUser,
-    bool? isAuthenticated,
-  }) {
-    return UserState(
-      currentUser: currentUser ?? this.currentUser,
-      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
-    );
+  Future<void> logout() async {
+    state = const AsyncValue.data(null);
+    // Here you would also clear any saved tokens
   }
 }
 
-class UserStore extends StateNotifier<UserState> {
-  UserStore()
-      : super(
-          const UserState(
-            currentUser: null,
-            isAuthenticated: false,
-          ),
-        );
-
-  void login(User user) {
-    state = state.copyWith(
-      currentUser: user,
-      isAuthenticated: true,
-    );
-  }
-
-  void logout() {
-    state = state.copyWith(
-      currentUser: null,
-      isAuthenticated: false,
-    );
-  }
-
-  void updateUser(User user) {
-    state = state.copyWith(currentUser: user);
-  }
-}
-
-final userStoreProvider = StateNotifierProvider<UserStore, UserState>(
-  (ref) => UserStore(),
+final userNotifierProvider = AsyncNotifierProvider<UserNotifier, User?>(
+  () => UserNotifier(),
 );

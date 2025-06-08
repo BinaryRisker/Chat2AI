@@ -1,62 +1,91 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'dart:math';
+import 'package:dio/dio.dart';
 import 'package:chat2ai/stores/user_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:chat2ai/config.dart';
+
+final apiServiceProvider = Provider<ApiService>((ref) => ApiService(ref));
 
 class ApiService {
-  final String baseUrl;
-  final Ref ref;
+  final Ref _ref;
+  late final Dio _dio;
 
-  ApiService(this.baseUrl, this.ref);
+  ApiService(this._ref) {
+    final options = BaseOptions(
+      baseUrl: baseUrl,
+      connectTimeout: const Duration(seconds: 5),
+      receiveTimeout: const Duration(seconds: 3),
+    );
+    
+    _dio = Dio(options);
+    _dio.interceptors.add(_createAuthInterceptor());
+  }
 
-  Future<http.Response> get(String path, {Map<String, String>? headers}) async {
-    final userState = ref.read(userStoreProvider);
-    final traceId = DateTime.now().millisecondsSinceEpoch.toRadixString(36) + 
-        '_' + _generateRandomString(8);
-    
-    final defaultHeaders = {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ${userState.token}',
-      'X-Trace-ID': traceId,
-    };
-    
-    if (headers != null) {
-      defaultHeaders.addAll(headers);
-    }
-    
-    return http.get(
-      Uri.parse('$baseUrl$path'),
-      headers: defaultHeaders,
+  Interceptor _createAuthInterceptor() {
+    return InterceptorsWrapper(
+      onRequest: (options, handler) {
+        final user = _ref.read(userNotifierProvider).valueOrNull;
+        final traceId = DateTime.now().millisecondsSinceEpoch.toRadixString(36) +
+            '_' +
+            _generateRandomString(8);
+
+        options.headers['Content-Type'] = 'application/json';
+        options.headers['X-Trace-ID'] = traceId;
+        // Assuming the token is part of the User model, or you'd get it from a secure storage
+        // if (user != null && user.token.isNotEmpty) {
+        //   options.headers['Authorization'] = 'Bearer ${user.token}';
+        // }
+        
+        return handler.next(options);
+      },
     );
   }
 
-  Future<http.Response> post(String path, 
-      {Map<String, dynamic>? body, Map<String, String>? headers}) async {
-    final userState = ref.read(userStoreProvider);
-    final traceId = DateTime.now().millisecondsSinceEpoch.toRadixString(36) + 
-        '_' + _generateRandomString(8);
-    
-    final defaultHeaders = {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ${userState.token}',
-      'X-Trace-ID': traceId,
-    };
-    
-    if (headers != null) {
-      defaultHeaders.addAll(headers);
-    }
-    
-    return http.post(
-      Uri.parse('$baseUrl$path'),
-      headers: defaultHeaders,
-      body: jsonEncode(body),
-    );
+  Future<Response> get(String path, {Map<String, dynamic>? queryParameters}) async {
+    return _dio.get(path, queryParameters: queryParameters);
   }
 
+  Future<Response> post(String path, {dynamic data}) async {
+    return _dio.post(path, data: data);
+  }
+  
   String _generateRandomString(int length) {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
     final random = Random();
     return String.fromCharCodes(Iterable.generate(
       length, (_) => chars.codeUnitAt(random.nextInt(chars.length))));
+  }
+
+  Future<Map<String, dynamic>> login(String email, String password) async {
+    final response = await _dio.post('/auth/login', data: {
+      'email': email,
+      'password': password,
+    });
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> register(String name, String email, String password) async {
+    final response = await _dio.post('/auth/register', data: {
+      'name': name,
+      'email': email,
+      'password': password,
+    });
+    return response.data;
+  }
+
+  // Chat methods
+  Future<List<dynamic>> getConversations() async {
+    final response = await _dio.get('/chat');
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> createConversation(String title) async {
+    final response = await _dio.post('/chat', data: {'title': title});
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> sendMessage(String conversationId, String content) async {
+    final response = await _dio.post('/chat/$conversationId/messages', data: {'content': content});
+    return response.data;
   }
 }

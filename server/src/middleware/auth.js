@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-const User = require('../models/user');
+const { User } = require('../models');
 
 async function authenticate(req, res, next) {
   try {
@@ -11,12 +11,14 @@ async function authenticate(req, res, next) {
     }
     
     const decoded = jwt.verify(token, config.jwt.secret);
-    const user = await User.findById(decoded.userId).select('-password');
+    // Find user by primary key
+    const user = await User.findByPk(decoded.userId);
     
     if (!user) {
       return res.status(401).json({ error: 'User not found' });
     }
     
+    // Attach the Sequelize user instance to the request object
     req.user = user;
     next();
   } catch (err) {

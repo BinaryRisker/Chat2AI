@@ -1,28 +1,26 @@
-const mongoose = require('mongoose');
+const { DataTypes, Model } = require('sequelize');
+const { sequelize } = require('../db');
 
-const messageSchema = new mongoose.Schema({
-  conversationId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Conversation',
-    required: true
+class Message extends Model {}
+
+Message.init({
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
   },
   content: {
-    type: String,
-    required: true,
-    text: true // 添加全文索引
+    type: DataTypes.TEXT,
+    allowNull: false,
   },
   role: {
-    type: String,
-    required: true,
-    enum: ['user', 'assistant', 'system']
+    type: DataTypes.ENUM('user', 'model', 'system'),
+    allowNull: false,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+  // conversationId and userId are foreign keys
+}, {
+  sequelize,
+  modelName: 'Message',
 });
 
-// 添加全文索引
-messageSchema.index({ content: 'text' });
-
-module.exports = mongoose.model('Message', messageSchema);
+module.exports = Message;

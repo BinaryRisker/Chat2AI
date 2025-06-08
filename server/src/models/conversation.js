@@ -1,32 +1,22 @@
-const mongoose = require('mongoose');
+const { DataTypes, Model } = require('sequelize');
+const { sequelize } = require('../db');
 
-const conversationSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
+class Conversation extends Model {}
+
+Conversation.init({
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
   },
   title: {
-    type: String,
-    required: true,
-    text: true // 添加全文索引
+    type: DataTypes.STRING,
+    allowNull: false,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
+  // userId is a foreign key, will be defined in associations
+}, {
+  sequelize,
+  modelName: 'Conversation',
 });
 
-// 添加全文索引
-conversationSchema.index({ title: 'text' });
-
-conversationSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
-  next();
-});
-
-module.exports = mongoose.model('Conversation', conversationSchema);
+module.exports = Conversation;

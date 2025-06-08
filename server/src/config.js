@@ -4,11 +4,8 @@ module.exports = {
   env: process.env.NODE_ENV || 'development',
   port: process.env.PORT || 3000,
   db: {
-    uri: process.env.DB_URI || 'mongodb://localhost:27017/chat2ai',
-    options: {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    },
+    dialect: 'sqlite',
+    storage: process.env.DB_STORAGE || './db.sqlite',
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'your-secret-key',

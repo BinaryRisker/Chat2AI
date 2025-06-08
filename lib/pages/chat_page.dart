@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:chat2ai/models/chat_model.dart';
+import 'package:go_router/go_router.dart';
 import 'package:chat2ai/stores/chat_store.dart';
 import 'package:chat2ai/widgets/chat_input.dart';
 import 'package:chat2ai/widgets/message_bubble.dart';
 
-class ChatPage extends ConsumerStatefulWidget {
+class ChatPage extends ConsumerWidget {
   final String conversationId;
 
   const ChatPage({
@@ -14,69 +14,54 @@ class ChatPage extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ChatPage> createState() => _ChatPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    // We only need to rebuild when the specific conversation changes.
+    final conversation = ref.watch(chatNotifierProvider.select(
+      (state) => state.value?.conversations.firstWhere((c) => c.id == conversationId),
+    ));
 
-class _ChatPageState extends ConsumerState<ChatPage> {
-  final _scrollController = ScrollController();
+    if (conversation == null) {
+      return const Center(child: Text('Conversation not found.'));
+    }
 
-  @override
-  void initState() {
-    super.initState();
-    _loadConversation();
-  }
-
-  Future<void> _loadConversation() async {
-    await ref
-        .read(chatStoreProvider.notifier)
-        .loadConversation(widget.conversationId);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final chatState = ref.watch(chatStoreProvider);
-    final conversation = chatState.currentConversation;
+    final scrollController = ScrollController();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(conversation?.title ?? 'New Chat'),
+        title: Text(conversation.title),
+        actions: [
+          // This would be dynamic in a real app
+          const Center(child: Text('GPT-4', style: TextStyle(color: Colors.white))),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
+            onPressed: () {
+              context.push('/settings');
+            },
+          ),
+        ],
+        automaticallyImplyLeading: false,
       ),
       body: Column(
         children: [
           Expanded(
             child: ListView.builder(
-              controller: _scrollController,
+              controller: scrollController,
               padding: const EdgeInsets.all(8.0),
-              itemCount: conversation?.messages.length ?? 0,
+              itemCount: conversation.messages.length,
               itemBuilder: (context, index) {
-                final message = conversation!.messages[index];
+                final message = conversation.messages[index];
                 return MessageBubble(message: message);
               },
             ),
           ),
           ChatInput(
-            onSend: (message) async {
-              await ref
-                  .read(chatStoreProvider.notifier)
-                  .sendMessage(
-                    conversationId: widget.conversationId,
-                    content: message,
-                  );
-              _scrollController.animateTo(
-                _scrollController.position.maxScrollExtent,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-              );
+            onSend: (text) {
+              ref.read(chatNotifierProvider.notifier).sendMessage(text);
             },
           ),
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
   }
 }

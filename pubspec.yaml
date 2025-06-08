@@ -9,7 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http: ^0.13.5
+  dio: ^5.4.0
   provider: ^6.0.5
   flutter_riverpod: ^2.3.6
   hooks_riverpod: ^2.3.6

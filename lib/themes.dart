@@ -13,10 +13,10 @@ final lightTheme = ThemeData(
     elevation: 0,
     centerTitle: true,
   ),
-  cardTheme: CardTheme(
-    elevation: 1,
+  cardTheme: const CardThemeData(
+    elevation: 2,
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.all(Radius.circular(16)),
     ),
   ),
 );
@@ -34,10 +34,10 @@ final darkTheme = ThemeData(
     elevation: 0,
     centerTitle: true,
   ),
-  cardTheme: CardTheme(
-    elevation: 1,
+  cardTheme: const CardThemeData(
+    elevation: 4,
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.all(Radius.circular(16)),
     ),
   ),
 );

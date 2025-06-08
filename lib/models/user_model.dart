@@ -3,6 +3,7 @@ class User {
   final String name;
   final String email;
   final String? avatarUrl;
+  final String? token;
   final DateTime createdAt;
   final DateTime? lastLoginAt;
   final Map<String, dynamic> preferences;
@@ -12,6 +13,7 @@ class User {
     required this.name,
     required this.email,
     this.avatarUrl,
+    this.token,
     required this.createdAt,
     this.lastLoginAt,
     required this.preferences,
@@ -23,6 +25,7 @@ class User {
       name: json['name'],
       email: json['email'],
       avatarUrl: json['avatarUrl'],
+      token: json['token'],
       createdAt: DateTime.parse(json['createdAt']),
       lastLoginAt: json['lastLoginAt'] != null ? DateTime.parse(json['lastLoginAt']) : null,
       preferences: json['preferences'] ?? {},
@@ -35,10 +38,30 @@ class User {
       'name': name,
       'email': email,
       'avatarUrl': avatarUrl,
+      'token': token,
       'createdAt': createdAt.toIso8601String(),
       'lastLoginAt': lastLoginAt?.toIso8601String(),
       'preferences': preferences,
     };
+  }
+
+  User copyWith({
+    String? id,
+    String? name,
+    String? email,
+    String? avatarUrl,
+    String? token,
+  }) {
+    return User(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      token: token ?? this.token,
+      createdAt: this.createdAt,
+      lastLoginAt: this.lastLoginAt,
+      preferences: this.preferences,
+    );
   }
 }
 
