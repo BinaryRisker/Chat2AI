@@ -7,24 +7,38 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:chat2ai/app.dart';
+import 'package:chat2ai/services/api_service.dart';
+import 'package:mocktail/mocktail.dart';
 
-import 'package:chat2ai/main.dart';
+// Create a mock for the ApiService
+class MockApiService extends Mock implements ApiService {}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('App starts and shows LoginPage correctly', (WidgetTester tester) async {
+    final mockApiService = MockApiService();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Stub all network methods that could be called during app initialization.
+    when(() => mockApiService.checkLoginStatus()).thenAnswer((_) async => null);
+    when(() => mockApiService.getConversations()).thenAnswer((_) async => []);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // Build our app and trigger a frame, overriding the apiServiceProvider.
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          // Override the dependency that makes network calls
+          apiServiceProvider.overrideWithValue(mockApiService),
+        ],
+        child: const Chat2AIApp(),
+      ),
+    );
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Let the widget tree settle.
+    await tester.pumpAndSettle();
+
+    // Verify that the LoginPage is shown.
+    expect(find.text('Login'), findsAtLeastNWidgets(1));
+    expect(find.byType(ElevatedButton), findsOneWidget);
   });
 }

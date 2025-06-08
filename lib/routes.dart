@@ -34,23 +34,31 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SettingsPage(),
       ),
     ],
-    // redirect: (BuildContext context, GoRouterState state) {
-    //   final isAuthenticated = userAsyncValue.valueOrNull != null;
-    //   final isLoggingIn = state.matchedLocation == '/login';
+    redirect: (BuildContext context, GoRouterState state) {
+      // It's safer to check for the loading state as well.
+      final isLoggedIn = userAsyncValue.hasValue && userAsyncValue.value != null;
+      final isLoggingIn = state.matchedLocation == '/login';
+      final isRegistering = state.matchedLocation == '/register';
 
-    //   // If the user is not authenticated and not on the login page, redirect to login.
-    //   if (!isAuthenticated && !isLoggingIn) {
-    //     return '/login';
-    //   }
+      // While the user state is loading, don't redirect.
+      // You might want to show a loading indicator.
+      if (userAsyncValue.isLoading) {
+        return null;
+      }
+
+      // If the user is not logged in and not trying to login or register, redirect them.
+      if (!isLoggedIn && !isLoggingIn && !isRegistering) {
+        return '/login';
+      }
       
-    //   // If the user is authenticated and on the login page, redirect to home.
-    //   if (isAuthenticated && isLoggingIn) {
-    //     return '/';
-    //   }
+      // If the user is logged in and tries to go to login/register, redirect to home.
+      if (isLoggedIn && (isLoggingIn || isRegistering)) {
+        return '/';
+      }
       
-    //   // No redirect needed.
-    //   return null;
-    // },
+      // No redirect needed.
+      return null;
+    },
   );
 });
 

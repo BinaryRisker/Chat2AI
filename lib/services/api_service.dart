@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:chat2ai/stores/user_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:chat2ai/config.dart';
+import 'package:chat2ai/models/user_model.dart';
 
 final apiServiceProvider = Provider<ApiService>((ref) => ApiService(ref));
 
@@ -87,5 +88,11 @@ class ApiService {
   Future<Map<String, dynamic>> sendMessage(String conversationId, String content) async {
     final response = await _dio.post('/chat/$conversationId/messages', data: {'content': content});
     return response.data;
+  }
+
+  Future<User?> checkLoginStatus() async {
+    // TODO: Implement actual token check against a backend endpoint
+    // For now, assume no user is logged in on startup.
+    return null;
   }
 }

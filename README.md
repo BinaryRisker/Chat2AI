@@ -1,4 +1,4 @@
-# Chat2AI - 重构版
+# Chat2AI
 跨平台AI聊天工具，支持多种大模型。目前项目已完成大规模重构，实现了前后端分离的现代化架构，并打通了真实数据链路。
 
 ## 项目概述
@@ -174,5 +174,16 @@ flutter pub get
 flutter run
 ```
 
-### 运行测试
+### 运行后端测试
+``````bash
+cd server
+npm install
+npm test
+```
+
+### 运行后端测试
+```bash
+# 确保在项目根目录
+flutter pub get
+flutter test
 ```

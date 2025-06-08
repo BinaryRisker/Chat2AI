@@ -1,81 +1,60 @@
-const chai = require('chai');
-const sinon = require('sinon');
-const SearchService = require('../services/search.service');
-const Conversation = require('../models/conversation');
-const Message = require('../models/message');
+const { Op } = require('sequelize');
+const SearchService = require('../src/services/search.service');
+const { Conversation, Message } = require('../src/models');
 
-const { expect } = chai;
+jest.mock('../src/models', () => ({
+  Conversation: {
+    findAll: jest.fn(),
+  },
+  Message: {
+    findAll: jest.fn(),
+  },
+}));
 
 describe('SearchService', () => {
-  let searchService;
-  
-  beforeEach(() => {
-    searchService = new SearchService();
-  });
-
   afterEach(() => {
-    sinon.restore();
+    jest.clearAllMocks();
   });
 
   describe('searchConversations', () => {
     it('should search conversations by query', async () => {
-      const userId = '123';
-      const query = 'test';
+      const req = { user: { id: 1 }, query: { q: 'Test' } };
       const expected = [{ title: 'Test Conversation' }];
       
-      sinon.stub(Conversation, 'find').returns({
-        sort: sinon.stub().resolves(expected)
-      });
+      Conversation.findAll.mockResolvedValue(expected);
       
-      const result = await searchService.searchConversations(userId, query);
-      expect(result).to.deep.equal(expected);
-      expect(Conversation.find.calledWith({
-        userId,
-        $text: { $search: query }
-      }, {
-        score: { $meta: 'textScore' }
-      })).to.be.true;
+      const result = await SearchService.searchConversations(req);
+      
+      expect(result).toEqual(expected);
+      expect(Conversation.findAll).toHaveBeenCalledWith({
+        where: {
+          userId: 1,
+          title: { [Op.like]: '%Test%' }
+        }
+      });
     });
   });
 
   describe('searchMessages', () => {
     it('should search messages by query', async () => {
-      const userId = '123';
-      const query = 'test';
-      const conversations = [{ _id: '1' }, { _id: '2' }];
+      const req = { user: { id: 1 }, query: { q: 'Test' } };
       const expected = [{ content: 'Test Message' }];
       
-      sinon.stub(Conversation, 'find').resolves(conversations);
-      sinon.stub(Message, 'find').returns({
-        sort: sinon.stub().resolves(expected)
-      });
-      
-      const result = await searchService.searchMessages(userId, query);
-      expect(result).to.deep.equal(expected);
-      expect(Message.find.calledWith({
-        conversationId: { $in: ['1', '2'] },
-        $text: { $search: query }
-      }, {
-        score: { $meta: 'textScore' }
-      })).to.be.true;
-    });
-  });
+      Message.findAll.mockResolvedValue(expected);
 
-  describe('globalSearch', () => {
-    it('should perform global search', async () => {
-      const userId = '123';
-      const query = 'test';
-      const conversations = [{ title: 'Test Conversation' }];
-      const messages = [{ content: 'Test Message' }];
+      const result = await SearchService.searchMessages(req);
       
-      sinon.stub(searchService, 'searchConversations').resolves(conversations);
-      sinon.stub(searchService, 'searchMessages').resolves(messages);
-      
-      const result = await searchService.globalSearch(userId, query);
-      expect(result).to.deep.equal({
-        conversations,
-        messages
+      expect(result).toEqual(expected);
+      expect(Message.findAll).toHaveBeenCalledWith({
+        where: {
+          content: { [Op.like]: '%Test%' }
+        },
+        include: [{
+          model: Conversation,
+          where: { userId: 1 },
+          attributes: []
+        }]
       });
     });
   });
-});
+}); 

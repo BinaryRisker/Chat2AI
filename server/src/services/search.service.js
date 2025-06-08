@@ -1,50 +1,52 @@
-const Conversation = require('../models/conversation');
-const Message = require('../models/message');
+const { Op } = require('sequelize');
+const { Conversation, Message } = require('../models');
 
 class SearchService {
-  async searchConversations(userId, query) {
+  async searchConversations(req) {
+    const { q: query } = req.query;
+    const userId = req.user.id;
     try {
-      return await Conversation.find(
-        {
+      return await Conversation.findAll({
+        where: {
           userId,
-          $text: { $search: query }
-        },
-        {
-          score: { $meta: 'textScore' }
+          title: {
+            [Op.like]: `%${query}%`
+          }
         }
-      ).sort({ score: { $meta: 'textScore' } });
+      });
     } catch (error) {
       console.error('Search conversations error:', error);
       throw error;
     }
   }
 
-  async searchMessages(userId, query) {
+  async searchMessages(req) {
+    const { q: query } = req.query;
+    const userId = req.user.id;
     try {
-      // 先找到用户的所有会话
-      const conversations = await Conversation.find({ userId });
-      const conversationIds = conversations.map(c => c._id);
-
-      return await Message.find(
-        {
-          conversationId: { $in: conversationIds },
-          $text: { $search: query }
+      return await Message.findAll({
+        where: {
+          content: {
+            [Op.like]: `%${query}%`
+          }
         },
-        {
-          score: { $meta: 'textScore' }
-        }
-      ).sort({ score: { $meta: 'textScore' } });
+        include: [{
+          model: Conversation,
+          where: { userId },
+          attributes: []
+        }]
+      });
     } catch (error) {
       console.error('Search messages error:', error);
       throw error;
     }
   }
 
-  async globalSearch(userId, query) {
+  async globalSearch(req) {
     try {
       const [conversations, messages] = await Promise.all([
-        this.searchConversations(userId, query),
-        this.searchMessages(userId, query)
+        this.searchConversations(req),
+        this.searchMessages(req)
       ]);
 
       return {
@@ -58,4 +60,4 @@ class SearchService {
   }
 }
 
-module.exports = SearchService;
+module.exports = new SearchService();
