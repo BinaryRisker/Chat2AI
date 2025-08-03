@@ -5,40 +5,51 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'package:chatgpt/widgets/chat_gpt_model_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:chat2ai/app.dart';
-import 'package:chat2ai/services/api_service.dart';
-import 'package:mocktail/mocktail.dart';
-
-// Create a mock for the ApiService
-class MockApiService extends Mock implements ApiService {}
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:openai_api/openai_api.dart';
 
 void main() {
-  testWidgets('App starts and shows LoginPage correctly', (WidgetTester tester) async {
-    final mockApiService = MockApiService();
-
-    // Stub all network methods that could be called during app initialization.
-    when(() => mockApiService.checkLoginStatus()).thenAnswer((_) async => null);
-    when(() => mockApiService.getConversations()).thenAnswer((_) async => []);
-
-    // Build our app and trigger a frame, overriding the apiServiceProvider.
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          // Override the dependency that makes network calls
-          apiServiceProvider.overrideWithValue(mockApiService),
-        ],
-        child: const Chat2AIApp(),
-      ),
+  testWidgets('GptModel Dropdown', (WidgetTester tester) async {
+    // Build our app and trigger a frame.
+    const dropdown = GptModelWidget(
+      active: null,
     );
-
-    // Let the widget tree settle.
+    await tester.pumpWidget(const MaterialApp(
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      home: Scaffold(
+        body: SizedBox(
+          height: 32,
+          child: dropdown,
+        ),
+      ),
+    ));
     await tester.pumpAndSettle();
+    expect(find.text('GPT-3.5'), findsOneWidget);
+    expect(find.byType(DropdownMenuItem<String>), findsWidgets);
+  });
 
-    // Verify that the LoginPage is shown.
-    expect(find.text('Login'), findsAtLeastNWidgets(1));
-    expect(find.byType(ElevatedButton), findsOneWidget);
+  testWidgets('GptModel value', (WidgetTester tester) async {
+    // Build our app and trigger a frame.
+    const dropdown = GptModelWidget(
+      active: Models.gpt4,
+    );
+    await tester.pumpWidget(const MaterialApp(
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      home: Scaffold(
+        body: SizedBox(
+          height: 32,
+          child: dropdown,
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('GPT-3.5'), findsNothing);
+    expect(find.byType(DropdownMenuItem<String>), findsNothing);
+    expect(find.text('GPT-4'), findsOneWidget);
   });
 }
